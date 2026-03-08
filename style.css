@@ -1,0 +1,314 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:wght@400;700&display=swap');
+
+:root {
+  --bg:      #0f0f1a;
+  --card:    #1a1a2e;
+  --accent:  #e94560;
+  --accent2: #0f3460;
+  --texte:   #eaeaea;
+  --gris:    #666;
+  --vert:    #2ecc71;
+  --orange:  #f39c12;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--texte);
+  font-family: 'Courier Prime', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.page-center {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* LOGO & TITRES */
+.logo { font-size: 56px; text-align: center; }
+
+.titre-principal {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px;
+  text-align: center;
+  line-height: 1.1;
+  letter-spacing: 2px;
+}
+
+.titre-secondaire {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 30px;
+  text-align: center;
+  color: var(--accent);
+}
+
+.accent { color: var(--accent); }
+.hint   { color: var(--gris); font-size: 13px; text-align: center; }
+
+/* CARDS */
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card h2 {
+  font-size: 16px;
+  color: var(--gris);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* INPUTS */
+.input-field {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg);
+  border: 1px solid #333;
+  border-radius: 10px;
+  color: var(--texte);
+  font-family: 'Courier Prime', monospace;
+  font-size: 16px;
+  text-align: center;
+  outline: none;
+  transition: border-color .2s;
+}
+.input-field:focus { border-color: var(--accent); }
+.input-code { text-transform: uppercase; letter-spacing: 4px; font-size: 20px; font-weight: bold; }
+
+.input-small {
+  width: 80px;
+  padding: 8px;
+  background: var(--bg);
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: var(--accent);
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  font-family: 'Courier Prime', monospace;
+}
+
+.row-inputs {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--gris);
+}
+
+/* TOGGLE CHECKBOX */
+.checkbox-group input[type=checkbox] { display: none; }
+.toggle {
+  width: 48px; height: 26px;
+  background: #333;
+  border-radius: 13px;
+  cursor: pointer;
+  position: relative;
+  transition: background .2s;
+}
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  background: white;
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: left .2s;
+}
+input[type=checkbox]:checked + .toggle { background: var(--accent); }
+input[type=checkbox]:checked + .toggle::after { left: 25px; }
+
+/* BOUTONS */
+.btn {
+  display: inline-block;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  width: 100%;
+  transition: opacity .2s, transform .1s;
+}
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-primary   { background: var(--accent);  color: white; }
+.btn-secondary { background: var(--accent2); color: white; }
+.btn-danger    { background: #333; color: var(--gris); margin-top: 8px; }
+
+/* SÉPARATEUR */
+.separateur {
+  color: var(--gris);
+  font-size: 13px;
+  text-align: center;
+  position: relative;
+  width: 100%;
+}
+.separateur::before, .separateur::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: #333;
+}
+.separateur::before { left: 0; }
+.separateur::after  { right: 0; }
+
+/* CODE BOX */
+.code-box {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.code-label { font-size: 12px; color: var(--gris); text-transform: uppercase; letter-spacing: 1px; }
+.code-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 52px;
+  letter-spacing: 8px;
+  color: var(--accent);
+}
+.btn-copier {
+  background: none;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: var(--gris);
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: border-color .2s;
+}
+.btn-copier:hover { border-color: var(--accent); color: var(--accent); }
+
+/* LISTE JOUEURS */
+.liste-joueurs { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.joueur-item {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 15px;
+}
+
+/* ATTENTE */
+.attente-box { text-align: center; }
+.spinner {
+  width: 40px; height: 40px;
+  border: 3px solid #333;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ÉCRANS JEU */
+.ecran { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.hidden { display: none !important; }
+
+/* ORDRE DE TOURS */
+.ordre-tours {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  font-size: 13px;
+}
+.joueur-ordre {
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #222;
+  color: var(--gris);
+}
+.joueur-ordre.actif  { background: var(--accent); color: white; font-weight: bold; }
+.joueur-ordre.fait   { background: #1a3a1a; color: var(--vert); }
+
+/* BADGES RÔLE */
+.badge {
+  padding: 10px 24px;
+  border-radius: 30px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+.badge-civil      { background: var(--accent2); color: white; }
+.badge-imposteur  { background: var(--accent);  color: white; }
+.badge-mrwhite    { background: var(--orange);  color: white; }
+
+/* COMPTEUR MR WHITE */
+.compteur-mr {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 80px;
+  color: var(--orange);
+  line-height: 1;
+}
+
+/* VOTES */
+.liste-votes { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.btn-vote {
+  padding: 14px;
+  background: var(--card);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  color: var(--texte);
+  font-size: 16px;
+  font-family: 'Courier Prime', monospace;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .2s;
+}
+.btn-vote:hover   { border-color: #444; }
+.btn-vote.selected { border-color: var(--accent); color: var(--accent); }
+
+/* RÉSULTAT */
+.resultat-card { text-align: center; font-size: 15px; gap: 8px; }
+.votes-detail  { width: 100%; text-align: center; font-size: 13px; color: var(--gris); }
+.votes-detail h3 { color: var(--texte); margin-bottom: 8px; }
+
+.infos-card { font-size: 14px; color: var(--gris); text-align: center; }
+
+/* ERREUR */
+.erreur-box {
+  background: #3a0a0a;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 12px 20px;
+  color: var(--accent);
+  font-size: 14px;
+  width: 100%;
+  text-align: center;
+}
+
+/* RESPONSIVE */
+@media (max-width: 400px) {
+  .titre-principal { font-size: 34px; }
+  .code-value { font-size: 42px; }
+}

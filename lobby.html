@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Lobby – {{ code }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="page-center">
+  <div class="logo">🏠</div>
+  <h1 class="titre-principal">LOBBY</h1>
+
+  <div class="code-box">
+    <span class="code-label">Code de la partie</span>
+    <span class="code-value" id="code-affiche">{{ code }}</span>
+    <button class="btn-copier" onclick="copierCode()">📋 Copier</button>
+  </div>
+
+  <div class="card">
+    <h2>Joueurs connectés (<span id="nb-joueurs">0</span>)</h2>
+    <ul id="liste-joueurs" class="liste-joueurs"></ul>
+  </div>
+
+  <div class="card infos-card">
+    <p>🔁 {{ nb_manches }} manche{{ 's' if nb_manches > 1 else '' }}</p>
+    {% if avec_mr_white %}<p>👤 Mister White activé</p>{% endif %}
+  </div>
+
+  {% if est_hote %}
+  <button id="btn-lancer" class="btn btn-primary" onclick="lancerPartie()" disabled>
+    ⏳ En attente de joueurs...
+  </button>
+  <p class="hint">Il faut au moins 3 joueurs pour lancer</p>
+  {% else %}
+  <div class="attente-box">
+    <div class="spinner"></div>
+    <p>En attente du lancement par l'hôte...</p>
+  </div>
+  {% endif %}
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+  const CODE   = "{{ code }}";
+  const PSEUDO = "{{ pseudo }}";
+  const socket = io();
+
+  socket.on('connect', () => {
+    socket.emit('rejoindre_lobby', { code: CODE, pseudo: PSEUDO });
+  });
+
+  socket.on('mise_a_jour_lobby', (data) => {
+    document.getElementById('nb-joueurs').textContent = data.nb;
+    const ul = document.getElementById('liste-joueurs');
+    ul.innerHTML = data.joueurs.map(j => `<li class="joueur-item">👤 ${j}</li>`).join('');
+
+    const btn = document.getElementById('btn-lancer');
+    if (btn) {
+      if (data.nb >= 3) {
+        btn.disabled = false;
+        btn.textContent = '▶ LANCER LA PARTIE';
+      } else {
+        btn.disabled = true;
+        btn.textContent = `⏳ ${data.nb}/3 joueurs minimum`;
+      }
+    }
+  });
+
+  socket.on('partie_lancee', (data) => {
+    window.location.href = `/jeu/${CODE}`;
+  });
+
+  function lancerPartie() {
+    socket.emit('lancer_partie', { code: CODE });
+  }
+
+  function copierCode() {
+    navigator.clipboard.writeText(CODE);
+    document.querySelector('.btn-copier').textContent = '✅ Copié !';
+    setTimeout(() => document.querySelector('.btn-copier').textContent = '📋 Copier', 2000);
+  }
+</script>
+</body>
+</html>
