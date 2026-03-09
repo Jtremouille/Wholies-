@@ -189,7 +189,8 @@ def on_lancer_partie(data):
 def _distribuer_roles(partie):
     sids  = list(partie['joueurs'].keys())
     random.shuffle(sids)
-    partie['ordre_tours'] = sids
+    # Stocke les pseudos dans l'ordre, pas les sids
+    partie['ordre_tours'] = [partie['joueurs'][s]['pseudo'] for s in sids]
     partie['tour_actuel'] = 0
     partie['votes']       = {}
     partie['phase']       = 'tour'
@@ -255,8 +256,8 @@ def on_rejoindre_jeu(data):
     _emettre_etat_tour(partie, code)
 
 def _emettre_etat_tour(partie, code):
-    ordre         = [partie['joueurs'].get(s, {}).get('pseudo', '?') for s in partie['ordre_tours']]
-    actuel_idx    = partie['tour_actuel']
+    ordre      = partie['ordre_tours']  # déjà des pseudos
+    actuel_idx = partie['tour_actuel']
     actuel_pseudo = ordre[actuel_idx] if actuel_idx < len(ordre) else None
 
     socketio.emit('etat_tour', {
