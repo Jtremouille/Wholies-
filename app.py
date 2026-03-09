@@ -160,9 +160,12 @@ def api_partie(code):
 
 @socketio.on('rejoindre_lobby')
 def on_rejoindre_lobby(data):
-    code   = data.get('code', '').upper()
+    code = data.get('code', '').upper()
     pseudo = data.get('pseudo', 'Joueur')
+    print(f">>> rejoindre_lobby reçu : code={code}, pseudo={pseudo}")
+    print(f">>> parties existantes : {list(parties.keys())}")
     partie = get_partie(code)
+    print(f">>> partie trouvée : {partie is not None}")
     if not partie:
         return
 
@@ -179,6 +182,7 @@ def on_rejoindre_lobby(data):
         'joueurs': [j['pseudo'] for j in partie['joueurs'].values()],
         'nb':      len(partie['joueurs']),
     }, to=code)
+
 
 @socketio.on('lancer_partie')
 def on_lancer_partie(data):
