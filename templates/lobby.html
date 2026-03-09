@@ -50,6 +50,10 @@
     socket.emit('rejoindre_lobby', { code: CODE, pseudo: PSEUDO });
   });
 
+socket.on('reconnect', () => {
+    socket.emit('rejoindre_lobby', { code: CODE, pseudo: PSEUDO });
+});
+
   socket.on('mise_a_jour_lobby', (data) => {
     document.getElementById('nb-joueurs').textContent = data.nb;
     const ul = document.getElementById('liste-joueurs');
