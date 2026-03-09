@@ -84,7 +84,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-  const CODE      = "{{ code }}";
+  console.log("Script chargé ! CODE=", "{{ code }}", "PSEUDO=", "{{ pseudo }}");
+  const CODE = "{{ code }}";
   const PSEUDO    = "{{ pseudo }}";
   const EST_HOTE  = {{ 'true' if est_hote else 'false' }};
   const socket = io(window.location.origin, {transports: ['polling']});
