@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Undercover – {{ code }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="page-center" id="app">
+
+  <!-- ÉCRAN : ATTENTE DE SON TOUR -->
+  <div id="ecran-attente" class="ecran">
+    <div class="logo">⏳</div>
+    <h2 class="titre-secondaire">Patiente...</h2>
+    <p id="txt-attente" class="hint">En attente du tour suivant</p>
+    <div class="ordre-tours" id="ordre-tours"></div>
+  </div>
+
+  <!-- ÉCRAN : C'EST TON TOUR -->
+  <div id="ecran-mon-tour" class="ecran hidden">
+    <div class="logo">👁</div>
+    <h2 class="titre-secondaire">C'est ton tour, <span id="pseudo-tour"></span> !</h2>
+    <p class="hint">Regarde bien ton indice, puis appuie sur "Prêt"</p>
+    <button class="btn btn-primary" onclick="voirIndice()">▶ VOIR MON INDICE</button>
+  </div>
+
+  <!-- ÉCRAN : INDICE (vidéo ou compteur mr white) -->
+  <div id="ecran-indice" class="ecran hidden">
+    <div id="badge-role"></div>
+
+    <!-- Vidéo civil / imposteur -->
+    <div id="zone-video" class="hidden">
+      <video id="ma-video" controls autoplay playsinline
+             style="width:100%;max-width:500px;border-radius:12px;margin:16px 0">
+        <source id="src-video" src="" type="video/mp4">
+      </video>
+    </div>
+
+    <!-- Compteur Mister White -->
+    <div id="zone-mrwhite" class="hidden">
+      <p class="hint">Tu n'as pas d'indice.<br>Fais semblant de regarder quelque chose... 🎭</p>
+      <div id="compteur" class="compteur-mr">--</div>
+    </div>
+
+    <button id="btn-pret" class="btn btn-primary" onclick="tourTermine()" disabled>
+      ⏳ Regarde d'abord...
+    </button>
+  </div>
+
+  <!-- ÉCRAN : VOTE -->
+  <div id="ecran-vote" class="ecran hidden">
+    <div class="logo">🗳</div>
+    <h2 class="titre-secondaire">Qui est l'imposteur ?</h2>
+    <p class="hint">Discutez, puis vote !</p>
+    <div id="liste-votes" class="liste-votes"></div>
+    <button id="btn-voter" class="btn btn-primary" onclick="validerVote()" disabled>
+      Sélectionne un joueur
+    </button>
+  </div>
+
+  <!-- ÉCRAN : RÉSULTAT -->
+  <div id="ecran-resultat" class="ecran hidden">
+    <div id="resultat-icone" class="logo"></div>
+    <h2 id="resultat-titre" class="titre-secondaire"></h2>
+    <div class="card resultat-card">
+      <p id="resultat-elu"></p>
+      <p id="resultat-imposteur"></p>
+      <p id="resultat-mrwhite"></p>
+      <p id="resultat-theme"></p>
+    </div>
+    <div id="resultat-votes" class="votes-detail"></div>
+    <div id="btn-manche-zone"></div>
+  </div>
+
+  <!-- ÉCRAN : FIN -->
+  <div id="ecran-fin" class="ecran hidden">
+    <div class="logo">🏆</div>
+    <h2 class="titre-secondaire">Partie terminée !</h2>
+    <a href="/" class="btn btn-primary">🏠 Retour à l'accueil</a>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+  const CODE      = "{{ code }}";
+  const PSEUDO    = "{{ pseudo }}";
+  const EST_HOTE  = {{ 'true' if est_hote else 'false' }};
+  const socket    = io();
+
+  let monRole     = null;
+  let maVideoUrl  = null;
+  let voteChoisi  = null;
+  let compteTimer = null;
+
+  // --- Connexion ---
+  socket.on('connect', () => {
+    socket.emit('rejoindre_jeu', { code: CODE, pseudo: PSEUDO });
+  });
+
+  // --- Réception du rôle ---
+  socket.on('ton_role', (data) => {
+    monRole    = data.role;
+    maVideoUrl = data.video_url;
+  });
+
+  // --- État du tour ---
+  socket.on('etat_tour', (data) => {
+    afficherOrdre(data);
+    if (data.actuel_pseudo === PSEUDO) {
+      afficherEcran('ecran-mon-tour');
+      document.getElementById('pseudo-tour').textContent = PSEUDO;
+    } else {
+      afficherEcran('ecran-attente');
+      document.getElementById('txt-attente').textContent =
+        `C'est le tour de ${data.actuel_pseudo} (${data.actuel_idx + 1}/${data.total})`;
+    }
+  });
+
+  // --- Passage au vote ---
+  socket.on('passer_au_vote', () => {
+    afficherEcran('ecran-vote');
+    // Récupère la liste des joueurs
+    fetch(`/api/partie/${CODE}?sid=${socket.id}`)
+      .then(r => r.json())
+      .then(data => {
+        const div = document.getElementById('liste-votes');
+        div.innerHTML = data.joueurs.map(j => `
+          <button class="btn-vote" onclick="selectionnerVote('${j}', this)">${j}</button>
+        `).join('');
+      });
+  });
+
+  // --- Résultat ---
+  socket.on('resultat', (data) => {
+    afficherEcran('ecran-resultat');
+    const icone = data.victoire_civils ? '✅' : '❌';
+    const titre = data.victoire_civils ? 'Les civils ont gagné !' : "L'imposteur a gagné !";
+    document.getElementById('resultat-icone').textContent = icone;
+    document.getElementById('resultat-titre').textContent = titre;
+    document.getElementById('resultat-elu').textContent = `🗳 Élu : ${data.elu}`;
+    document.getElementById('resultat-imposteur').textContent = `🟥 Imposteur : ${data.imposteur}`;
+    document.getElementById('resultat-mrwhite').textContent = data.mr_white ? `👤 Mister White : ${data.mr_white}` : '';
+    document.getElementById('resultat-theme').textContent = `🎬 Thème : ${data.theme}`;
+
+    // Détail des votes
+    const votesDiv = document.getElementById('resultat-votes');
+    votesDiv.innerHTML = '<h3>Votes :</h3>' +
+      Object.entries(data.votes).map(([j, n]) => `<p>${j} : ${n} vote${n > 1 ? 's' : ''}</p>`).join('');
+
+    // Boutons fin de manche
+    const zone = document.getElementById('btn-manche-zone');
+    if (EST_HOTE) {
+      if (data.manche < data.nb_manches) {
+        zone.innerHTML = `<button class="btn btn-primary" onclick="mancheSuivante()">▶ Manche suivante (${data.manche}/${data.nb_manches})</button>`;
+      } else {
+        zone.innerHTML = `<button class="btn btn-secondary" onclick="mancheSuivante()">🏁 Terminer la partie</button>`;
+      }
+    } else {
+      zone.innerHTML = `<p class="hint">En attente de l'hôte...</p>`;
+    }
+    zone.innerHTML += `<a href="/" class="btn btn-danger">❌ Quitter</a>`;
+  });
+
+  socket.on('nouvelle_manche', (data) => {
+    socket.emit('rejoindre_jeu', { code: CODE, pseudo: PSEUDO });
+  });
+
+  socket.on('fin_partie', () => {
+    afficherEcran('ecran-fin');
+  });
+
+  // -------------------------------------------------------
+  // ACTIONS JOUEUR
+  // -------------------------------------------------------
+
+  function voirIndice() {
+    afficherEcran('ecran-indice');
+
+    const badge = document.getElementById('badge-role');
+    if (monRole === 'civil') {
+      badge.innerHTML = '<div class="badge badge-civil">🟦 Tu es CIVIL</div>';
+    } else if (monRole === 'imposteur') {
+      badge.innerHTML = '<div class="badge badge-imposteur">🟥 Tu es l\'IMPOSTEUR</div>';
+    } else {
+      badge.innerHTML = '<div class="badge badge-mrwhite">👤 Tu es MISTER WHITE</div>';
+    }
+
+    if (monRole === 'mr_white') {
+      // Récupère la durée via une vidéo temporaire
+      document.getElementById('zone-mrwhite').classList.remove('hidden');
+      lancerCompteur(30); // durée par défaut, ajustable
+    } else {
+      document.getElementById('zone-video').classList.remove('hidden');
+      const video = document.getElementById('ma-video');
+      document.getElementById('src-video').src = maVideoUrl;
+      video.load();
+      video.play();
+      // Active le bouton quand la vidéo est terminée
+      video.onended = () => debloquerBtnPret();
+    }
+  }
+
+  function lancerCompteur(secondes) {
+    let s = secondes;
+    document.getElementById('compteur').textContent = `${s}s`;
+    compteTimer = setInterval(() => {
+      s--;
+      document.getElementById('compteur').textContent = `${s}s`;
+      if (s <= 0) {
+        clearInterval(compteTimer);
+        document.getElementById('compteur').textContent = '✅';
+        debloquerBtnPret();
+      }
+    }, 1000);
+  }
+
+  function debloquerBtnPret() {
+    const btn = document.getElementById('btn-pret');
+    btn.disabled = false;
+    btn.textContent = '✅ Prêt !';
+  }
+
+  function tourTermine() {
+    socket.emit('tour_termine', { code: CODE });
+  }
+
+  function selectionnerVote(pseudo, el) {
+    voteChoisi = pseudo;
+    document.querySelectorAll('.btn-vote').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    const btn = document.getElementById('btn-voter');
+    btn.disabled = false;
+    btn.textContent = `Voter pour ${pseudo}`;
+  }
+
+  function validerVote() {
+    if (!voteChoisi) return;
+    socket.emit('voter', { code: CODE, cible: voteChoisi });
+    document.getElementById('btn-voter').disabled = true;
+    document.getElementById('btn-voter').textContent = '✅ Vote envoyé !';
+  }
+
+  function mancheSuivante() {
+    socket.emit('manche_suivante', { code: CODE });
+  }
+
+  // -------------------------------------------------------
+  // UTILITAIRES
+  // -------------------------------------------------------
+
+  function afficherEcran(id) {
+    document.querySelectorAll('.ecran').forEach(e => e.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+  }
+
+  function afficherOrdre(data) {
+    const div = document.getElementById('ordre-tours');
+    if (!div) return;
+    div.innerHTML = data.ordre.map((j, i) => {
+      const actif = i === data.actuel_idx ? 'actif' : '';
+      const fait  = i < data.actuel_idx ? 'fait' : '';
+      return `<span class="joueur-ordre ${actif} ${fait}">${j}</span>`;
+    }).join(' → ');
+  }
+</script>
+</body>
+</html>

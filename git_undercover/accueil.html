@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Undercover Vidéo</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="page-center">
+  <div class="logo">🕵️</div>
+  <h1 class="titre-principal">UNDERCOVER<br><span class="accent">VIDÉO</span></h1>
+
+  {% if erreur %}
+  <div class="erreur-box">{{ erreur }}</div>
+  {% endif %}
+
+  <!-- CRÉER UNE PARTIE -->
+  <div class="card" id="card-creer">
+    <h2>Créer une partie</h2>
+    <form action="/creer" method="POST">
+      <input type="text" name="pseudo" placeholder="Ton prénom" maxlength="20" required class="input-field">
+      <div class="row-inputs">
+        <div class="input-group">
+          <label>Manches</label>
+          <input type="number" name="nb_manches" value="3" min="1" max="20" class="input-small">
+        </div>
+        <div class="input-group checkbox-group">
+          <label>Mister White</label>
+          <input type="checkbox" name="mr_white" id="mr_white">
+          <label for="mr_white" class="toggle"></label>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">▶ CRÉER</button>
+    </form>
+  </div>
+
+  <div class="separateur">ou</div>
+
+  <!-- REJOINDRE -->
+  <div class="card" id="card-rejoindre">
+    <h2>Rejoindre une partie</h2>
+    <form action="/rejoindre" method="POST">
+      <input type="text" name="pseudo" placeholder="Ton prénom" maxlength="20" required class="input-field">
+      <input type="text" name="code" placeholder="Code (ex: ABCDEF)" maxlength="6"
+             required class="input-field input-code" style="text-transform:uppercase">
+      <button type="submit" class="btn btn-secondary">🚪 REJOINDRE</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>
