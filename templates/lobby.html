@@ -46,9 +46,10 @@
   const PSEUDO = "{{ pseudo }}";
   const socket = io(window.location.origin, {transports: ['polling']});
 
-  socket.on('connect', () => {
+socket.on('connect', () => {
+    console.log("Connecté ! CODE=", CODE, "PSEUDO=", PSEUDO);
     socket.emit('rejoindre_lobby', { code: CODE, pseudo: PSEUDO });
-  });
+});
 
 socket.on('reconnect', () => {
     socket.emit('rejoindre_lobby', { code: CODE, pseudo: PSEUDO });
