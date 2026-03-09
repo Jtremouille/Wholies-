@@ -15,8 +15,8 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 # -------------------------------------------------------
 THEMES = {
     "Nuit": {
-        "civil":     "https://res.cloudinary.com/TON_CLOUD/video/upload/Nuit/1_Braquage_nuit.mp4",
-        "imposteur": "https://res.cloudinary.com/TON_CLOUD/video/upload/Nuit/2_Braquage_nuit.mp4",
+        "civil":     "https://res.cloudinary.com/dzgy637iz/video/upload/v1772999688/1_Braquage_nuit_k34icx.mp4",
+        "imposteur": "https://res.cloudinary.com/dzgy637iz/video/upload/v1772999689/2_Braquage_nuit_pr1nq7.mp4",
     },
     # Ajoute tes thèmes ici :
     # "Plage": {
