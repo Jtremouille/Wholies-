@@ -145,16 +145,17 @@ def api_partie(code):
 def on_rejoindre_lobby(data):
     code   = data.get('code', '').upper()
     pseudo = data.get('pseudo', 'Joueur')
-    print(f">>> rejoindre_lobby : code={code}, pseudo={pseudo}, sid={request.sid}")
 
     partie = get_partie(code)
     if not partie:
-        print(f">>> ERREUR : partie {code} introuvable")
         return
 
-    join_room(code)
-    print(f">>> {pseudo} a rejoint la room {code}")
+    # Supprimer les anciens sid du même pseudo
+    anciens_sids = [sid for sid, j in partie['joueurs'].items() if j['pseudo'] == pseudo]
+    for sid in anciens_sids:
+        del partie['joueurs'][sid]
 
+    join_room(code)
     partie['joueurs'][request.sid] = {
         'pseudo':    pseudo,
         'role':      None,
@@ -163,13 +164,11 @@ def on_rejoindre_lobby(data):
         'sid':       request.sid,
     }
     sauver_partie(code, partie)
-    print(f">>> joueurs dans la partie : {[j['pseudo'] for j in partie['joueurs'].values()]}")
 
     emit('mise_a_jour_lobby', {
         'joueurs': [j['pseudo'] for j in partie['joueurs'].values()],
         'nb':      len(partie['joueurs']),
     }, to=code)
-    print(f">>> mise_a_jour_lobby envoyé à la room {code}")
 
 @socketio.on('lancer_partie')
 def on_lancer_partie(data):
