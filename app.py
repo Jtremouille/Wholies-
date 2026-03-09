@@ -226,18 +226,19 @@ def _distribuer_roles(partie):
 def on_rejoindre_jeu(data):
     code   = data.get('code', '').upper()
     pseudo = data.get('pseudo', '')
+    print(f">>> rejoindre_jeu : code={code}, pseudo={pseudo}, sid={request.sid}")
+
     partie = get_partie(code)
     if not partie:
+        print(f">>> ERREUR : partie {code} introuvable")
         return
 
     join_room(code)
 
-    # Cherche le joueur par pseudo et met à jour son sid
     joueur = None
     for sid, j in partie['joueurs'].items():
         if j['pseudo'] == pseudo:
             joueur = j
-            # Met à jour le sid
             partie['joueurs'][request.sid] = joueur
             partie['joueurs'][request.sid]['sid'] = request.sid
             if sid != request.sid:
@@ -246,8 +247,10 @@ def on_rejoindre_jeu(data):
             break
 
     if not joueur:
+        print(f">>> ERREUR : joueur {pseudo} introuvable dans la partie")
         return
 
+    print(f">>> envoi ton_role à {pseudo} : role={joueur['role']}")
     emit('ton_role', {
         'role':      joueur['role'],
         'video_url': joueur['video_url'],
