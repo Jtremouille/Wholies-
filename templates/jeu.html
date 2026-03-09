@@ -84,7 +84,16 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-  console.log("Script chargé ! CODE=", "{{ code }}", "PSEUDO=", "{{ pseudo }}");
+ console.log("Script chargé ! CODE=", "{{ code }}", "PSEUDO=", "{{ pseudo }}");
+ const socket = io(window.location.origin, {transports: ['polling']});
+ socket.on('connect', () => {
+    console.log("Socket connecté ! sid=", socket.id);
+    socket.emit('rejoindre_jeu', { code: CODE, pseudo: PSEUDO });
+});
+ socket.on('connect_error', (err) => {
+    console.log("Erreur connexion socket:", err);
+});
+
   const CODE = "{{ code }}";
   const PSEUDO    = "{{ pseudo }}";
   const EST_HOTE  = {{ 'true' if est_hote else 'false' }};
