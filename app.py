@@ -17,7 +17,9 @@ THEMES = {
     "Nuit": {
         "civil":     "https://res.cloudinary.com/dzgy637iz/video/upload/v1772999688/1_Braquage_nuit_k34icx.mp4",
         "imposteur": "https://res.cloudinary.com/dzgy637iz/video/upload/v1772999689/2_Braquage_nuit_pr1nq7.mp4",
+    }
 
+        
      "Image": {
         "civil":     "https://res.cloudinary.com/dzgy637iz/image/upload/v1772999727/1_image_ix6jmq.png",
         "imposteur": "https://res.cloudinary.com/dzgy637iz/image/upload/v1772999729/2_image_wzsczs.png",
