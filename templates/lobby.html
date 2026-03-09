@@ -44,7 +44,7 @@
 <script>
   const CODE   = "{{ code }}";
   const PSEUDO = "{{ pseudo }}";
-  const socket = io();
+  const socket = io(window.location.origin, {transports: ['polling']});
 
   socket.on('connect', () => {
     socket.emit('rejoindre_lobby', { code: CODE, pseudo: PSEUDO });

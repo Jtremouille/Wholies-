@@ -6,7 +6,8 @@ from flask_socketio import SocketIO, join_room, leave_room, emit
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'undercover-secret-key-change-in-prod')
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent')
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent',
+                    allow_upgrades=False)
 
 # -------------------------------------------------------
 # BANQUE DE THÈMES (vidéos Cloudinary)

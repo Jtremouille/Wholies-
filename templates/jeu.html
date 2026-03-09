@@ -87,7 +87,7 @@
   const CODE      = "{{ code }}";
   const PSEUDO    = "{{ pseudo }}";
   const EST_HOTE  = {{ 'true' if est_hote else 'false' }};
-  const socket    = io();
+  const socket = io(window.location.origin, {transports: ['polling']});
 
   let monRole     = null;
   let maVideoUrl  = null;
