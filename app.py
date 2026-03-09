@@ -224,12 +224,26 @@ def _distribuer_roles(partie):
 @socketio.on('rejoindre_jeu')
 def on_rejoindre_jeu(data):
     code   = data.get('code', '').upper()
+    pseudo = data.get('pseudo', '')
     partie = get_partie(code)
     if not partie:
         return
 
     join_room(code)
-    joueur = partie['joueurs'].get(request.sid)
+
+    # Cherche le joueur par pseudo et met à jour son sid
+    joueur = None
+    for sid, j in partie['joueurs'].items():
+        if j['pseudo'] == pseudo:
+            joueur = j
+            # Met à jour le sid
+            partie['joueurs'][request.sid] = joueur
+            partie['joueurs'][request.sid]['sid'] = request.sid
+            if sid != request.sid:
+                del partie['joueurs'][sid]
+            sauver_partie(code, partie)
+            break
+
     if not joueur:
         return
 
