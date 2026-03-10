@@ -453,31 +453,31 @@ def calculer_resultat(code):
     sauver_partie(code, partie)
 
 
-@socketio.on("manche_suivante")
+@socketio.on('manche_suivante')
 def manche_suivante(data):
 
-    code = data.get("code", "").upper()
-    pseudo = data.get("pseudo")
+    code = data.get('code','').upper()
 
     partie = get_partie(code)
 
     if not partie:
         return
 
-    # seul l'hôte peut lancer
-    if pseudo != partie["hote"]:
-        return
+    partie['manche'] += 1
 
-    if partie["manche"] >= partie["nb_manches"]:
+    partie['votes'] = {}
 
-        socketio.emit("fin_partie", {}, to=code)
-        return
-
-    partie["manche"] += 1
+    for j in partie['joueurs'].values():
+        j['pret'] = False
+        j['role'] = None
+        j['video_url'] = None
 
     sauver_partie(code, partie)
 
+    socketio.emit('nouvelle_manche', {}, to=code)
+
     distribuer_roles(code)
+
 # ------------------------------
 # MAIN
 # ------------------------------
