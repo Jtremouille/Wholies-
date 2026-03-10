@@ -79,9 +79,14 @@
 
   const socket = io(window.location.origin, {transports: ['polling']});
 
+  let dejaRejoint = false;
+
   socket.on('connect', () => {
-    console.log("Connecté ! sid=", socket.id);
-    socket.emit('rejoindre_jeu', { code: CODE, pseudo: PSEUDO });
+      console.log("Connecté ! sid=", socket.id);
+      if (!dejaRejoint) {
+          dejaRejoint = true;
+          socket.emit('rejoindre_jeu', { code: CODE, pseudo: PSEUDO });
+      }
   });
 
   socket.on('ton_role', (data) => {

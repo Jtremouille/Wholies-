@@ -294,8 +294,13 @@ def on_rejoindre_jeu(data):
     print(f">>> rejoindre_jeu: {pseudo} | {len(prets_jeu)}/{nb_attendus} arrivés")
 
     # Distribuer une seule fois quand tout le monde est là
-    if nb_attendus > 0 and len(prets_jeu) >= nb_attendus:
+    # On relit la partie depuis Redis pour éviter la race condition
+    partie_fraiche = get_partie(code)
+    if (partie_fraiche.get('phase') == 'chargement'
+            and nb_attendus > 0
+            and len(partie_fraiche.get('joueurs_prets_jeu', [])) >= nb_attendus):
         distribuer_roles(code)
+
 
 @socketio.on('joueur_pret')
 def on_joueur_pret(data):
