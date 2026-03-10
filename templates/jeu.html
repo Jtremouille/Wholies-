@@ -92,7 +92,7 @@
     console.log("ton_role reçu !", data);
     monRole    = data.role;
     maVideoUrl = data.video_url;
-    afficherIndice();
+    afficherContenu();
   });
 
   socket.on('tout_le_monde_pret', () => {
@@ -148,6 +148,25 @@
   // -------------------------------------------------------
   // AFFICHAGE DE L'INDICE
   // -------------------------------------------------------
+function afficherContenu() {
+    afficherEcran('ecran-indice');
+
+    if (monRole === 'mr_white') {
+        document.getElementById('zone-mrwhite').classList.remove('hidden');
+        lancerCompteur(30);
+    } else if (maVideoUrl && maVideoUrl.includes('/video/')) {
+        document.getElementById('zone-video').classList.remove('hidden');
+        const video = document.getElementById('ma-video');
+        document.getElementById('src-video').src = maVideoUrl;
+        video.load();
+        video.play();
+        video.onended = () => debloquerBtnPret();
+    } else if (maVideoUrl) {
+        document.getElementById('zone-image').classList.remove('hidden');
+        document.getElementById('mon-image').src = maVideoUrl;
+        debloquerBtnPret();
+    }
+}
 
   function lancerCompteur(secondes) {
     let s = secondes;
