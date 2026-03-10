@@ -90,7 +90,7 @@ def creer_partie():
         'joueurs': {},
         'votes': {},
         'theme_actuel': None,
-        "scenes_restantes": SCENES.copy()
+        "scenes_restantes": SCENES.copy(),
         "host_sid": request.sid
     }
 
