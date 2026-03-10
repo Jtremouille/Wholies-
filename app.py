@@ -189,11 +189,12 @@ def on_lancer_partie(data):
 def _distribuer_roles(partie):
     sids  = list(partie['joueurs'].keys())
     random.shuffle(sids)
-    # Stocke les pseudos dans l'ordre, pas les sids
-    partie['ordre_tours'] = [partie['joueurs'][s]['pseudo'] for s in sids]
-    partie['tour_actuel'] = 0
-    partie['votes']       = {}
-    partie['phase']       = 'tour'
+    partie['votes']   = {}
+    partie['phase']   = 'visionnage'
+
+    # Remet tout le monde en non-prêt
+    for sid in sids:
+        partie['joueurs'][sid]['pret'] = False
 
     nom_theme = random.choice(list(THEMES.keys()))
     theme     = THEMES[nom_theme]
@@ -219,6 +220,7 @@ def _distribuer_roles(partie):
         partie['joueurs'][sid]['role']      = role
         partie['joueurs'][sid]['video_url'] = video_url
 
+
 # -------------------------------------------------------
 # SOCKETIO — JEU
 # -------------------------------------------------------
@@ -235,19 +237,21 @@ def on_rejoindre_jeu(data):
 
     join_room(code)
 
+    # Cherche le joueur par pseudo et met à jour son sid
     joueur = None
-    for sid, j in partie['joueurs'].items():
+    for sid, j in list(partie['joueurs'].items()):
         if j['pseudo'] == pseudo:
             joueur = j
             partie['joueurs'][request.sid] = joueur
             partie['joueurs'][request.sid]['sid'] = request.sid
+            partie['joueurs'][request.sid]['pret'] = False
             if sid != request.sid:
                 del partie['joueurs'][sid]
             sauver_partie(code, partie)
             break
 
     if not joueur:
-        print(f">>> ERREUR : joueur {pseudo} introuvable dans la partie")
+        print(f">>> ERREUR : joueur {pseudo} introuvable")
         return
 
     print(f">>> envoi ton_role à {pseudo} : role={joueur['role']}")
@@ -256,37 +260,31 @@ def on_rejoindre_jeu(data):
         'video_url': joueur['video_url'],
         'pseudo':    joueur['pseudo'],
     })
-    _emettre_etat_tour(partie, code)
 
-def _emettre_etat_tour(partie, code):
-    ordre      = partie['ordre_tours']  # déjà des pseudos
-    actuel_idx = partie['tour_actuel']
-    actuel_pseudo = ordre[actuel_idx] if actuel_idx < len(ordre) else None
-
-    socketio.emit('etat_tour', {
-        'ordre':         ordre,
-        'actuel_pseudo': actuel_pseudo,
-        'actuel_idx':    actuel_idx,
-        'total':         len(ordre),
-        'manche':        partie['manche'],
-        'nb_manches':    partie['nb_manches'],
-    }, to=code)
-
-@socketio.on('tour_termine')
-def on_tour_termine(data):
+@socketio.on('joueur_pret')
+def on_joueur_pret(data):
     code   = data.get('code', '').upper()
     partie = get_partie(code)
     if not partie:
         return
 
-    partie['tour_actuel'] += 1
-    if partie['tour_actuel'] >= len(partie['ordre_tours']):
+    if request.sid in partie['joueurs']:
+        partie['joueurs'][request.sid]['pret'] = True
+        sauver_partie(code, partie)
+
+    nb_prets = sum(1 for j in partie['joueurs'].values() if j.get('pret'))
+    total    = len(partie['joueurs'])
+    print(f">>> joueur_pret : {nb_prets}/{total} prêts")
+
+    # Informe tout le monde du nombre de joueurs prêts
+    socketio.emit('nb_prets', {'nb': nb_prets, 'total': total}, to=code)
+
+    # Quand tout le monde est prêt → passage au vote
+    if nb_prets >= total:
         partie['phase'] = 'vote'
         sauver_partie(code, partie)
-        socketio.emit('passer_au_vote', {}, to=code)
-    else:
-        sauver_partie(code, partie)
-        _emettre_etat_tour(partie, code)
+        socketio.emit('tout_le_monde_pret', {}, to=code)
+
 
 @socketio.on('voter')
 def on_voter(data):
