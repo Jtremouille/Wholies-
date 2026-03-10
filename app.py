@@ -90,6 +90,8 @@ def creer_partie():
         'joueurs': {},
         'votes': {},
         'theme_actuel': None,
+        "scenes_restantes": SCENES.copy()
+        "host_sid": request.sid
     }
 
     sauver_partie(code, partie)
@@ -180,46 +182,69 @@ def distribuer_roles(code):
 
     partie = get_partie(code)
 
+    if not partie:
+        return
+
     sids = list(partie['joueurs'].keys())
+
+    if len(sids) < 2:
+        return
 
     random.shuffle(sids)
 
-    # choisir une scène
-    scene = random.choice(SCENES)
+    # reset des joueurs pour la nouvelle manche
+    for j in partie["joueurs"].values():
+        j["pret"] = False
+        j["vote"] = None
+        j["role"] = None
+        j["video_url"] = None
+
+    # choisir une scène sans répétition
+    if not partie.get("scenes_restantes"):
+        partie["scenes_restantes"] = SCENES.copy()
+
+    scene = random.choice(partie["scenes_restantes"])
+    partie["scenes_restantes"].remove(scene)
+
     print("SCENE CHOISIE:", scene["nom"])
 
     civil_url = scene["civil"]
     imposteur_url = scene["imposteur"]
 
-    partie['theme_actuel'] = scene["nom"]
+    partie["theme_actuel"] = scene["nom"]
 
+    # choisir l'imposteur
     imposteur_sid = random.choice(sids)
 
+    print("IMPOSTEUR:", partie["joueurs"][imposteur_sid]["pseudo"])
+
+    # distribution des rôles
     for sid in sids:
 
         if sid == imposteur_sid:
-
             role = "imposteur"
             url = imposteur_url
-
         else:
-
             role = "civil"
             url = civil_url
 
-        partie['joueurs'][sid]['role'] = role
-        partie['joueurs'][sid]['video_url'] = url
+        partie["joueurs"][sid]["role"] = role
+        partie["joueurs"][sid]["video_url"] = url
 
     sauver_partie(code, partie)
 
-    for sid, j in partie['joueurs'].items():
+    # envoyer les rôles aux joueurs
+    for sid, j in partie["joueurs"].items():
 
-        socketio.emit('ton_role', {
-            'role': j['role'],
-            'video_url': j['video_url'],
-            'pseudo': j['pseudo'],
-        }, to=sid)
-
+        socketio.emit(
+            "ton_role",
+            {
+                "role": j["role"],
+                "video_url": j["video_url"],
+                "pseudo": j["pseudo"],
+            },
+            to=sid,
+        )
 
 # ------------------------------
 # SOCKET LOBBY
@@ -423,30 +448,32 @@ def calculer_resultat(code):
     sauver_partie(code, partie)
 
 
-@socketio.on('manche_suivante')
-
+@socketio.on("manche_suivante")
 def manche_suivante(data):
 
-    code = data.get('code', '').upper()
+    code = data.get("code", "").upper()
 
     partie = get_partie(code)
 
     if not partie:
         return
 
-    if partie['manche'] >= partie['nb_manches']:
-
-        socketio.emit('fin_partie', {}, to=code)
-
+    # seul l'host peut lancer la manche
+    if request.sid != partie.get("host_sid"):
         return
 
-    partie['manche'] += 1
+    # vérifier fin de partie
+    if partie["manche"] >= partie["nb_manches"]:
+
+        socketio.emit("fin_partie", {}, to=code)
+        return
+
+    # passer à la manche suivante
+    partie["manche"] += 1
 
     sauver_partie(code, partie)
 
     distribuer_roles(code)
-
-
 # ------------------------------
 # MAIN
 # ------------------------------
