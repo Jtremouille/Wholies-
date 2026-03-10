@@ -199,16 +199,17 @@ function afficherContenu() {
   // -------------------------------------------------------
   function afficherEcranVote() {
     afficherEcran('ecran-vote');
-    fetch(`/api/partie/${CODE}?sid=${socket.id}`)
+    fetch(`/api/partie/${CODE}`)
       .then(r => r.json())
       .then(data => {
+        console.log("joueurs pour vote:", data.joueurs);
         const div = document.getElementById('liste-votes');
         div.innerHTML = data.joueurs
           .filter(j => j !== PSEUDO)
           .map(j => `<button class="btn-vote" onclick="selectionnerVote('${j}', this)">${j}</button>`)
           .join('');
       });
-  }
+}
 
   function selectionnerVote(pseudo, el) {
     voteChoisi = pseudo;

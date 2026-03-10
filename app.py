@@ -175,9 +175,13 @@ def on_lancer_partie(data):
         emit('erreur', {'message': 'Il faut au moins 3 joueurs !'})
         return
 
-    _distribuer_roles(partie)
+    # On ne distribue PAS encore les rôles
+    # On marque juste combien de joueurs on attend
+    partie['phase']        = 'chargement_jeu'
+    partie['nb_attendus']  = len(sids)
+    partie['joueurs_prets_jeu'] = []
     sauver_partie(code, partie)
-    emit('partie_lancee', {'code': code}, to=code)
+    socketio.emit('partie_lancee', {'code': code}, to=code)
 
 def _distribuer_roles(partie):
     sids  = list(partie['joueurs'].keys())
@@ -231,29 +235,35 @@ def on_rejoindre_jeu(data):
 
     join_room(code)
 
-    # Cherche le joueur par pseudo et met à jour son sid
-    joueur = None
+    # Met à jour le sid du joueur
     for sid, j in list(partie['joueurs'].items()):
         if j['pseudo'] == pseudo:
-            joueur = j
-            partie['joueurs'][request.sid] = joueur
-            partie['joueurs'][request.sid]['sid'] = request.sid
-            partie['joueurs'][request.sid]['pret'] = False
             if sid != request.sid:
+                partie['joueurs'][request.sid] = j
+                partie['joueurs'][request.sid]['sid'] = request.sid
                 del partie['joueurs'][sid]
-            sauver_partie(code, partie)
             break
 
-    if not joueur:
-        print(f">>> ERREUR : joueur {pseudo} introuvable")
-        return
+    # Ajoute à la liste des joueurs arrivés sur /jeu
+    if pseudo not in partie.get('joueurs_prets_jeu', []):
+        partie.setdefault('joueurs_prets_jeu', []).append(pseudo)
 
-    print(f">>> envoi ton_role à {pseudo} : role={joueur['role']}")
-    emit('ton_role', {
-        'role':      joueur['role'],
-        'video_url': joueur['video_url'],
-        'pseudo':    joueur['pseudo'],
-    })
+    sauver_partie(code, partie)
+    print(f">>> joueurs sur /jeu : {partie['joueurs_prets_jeu']} / attendus : {partie['nb_attendus']}")
+
+    # Quand tout le monde est arrivé → distribuer les rôles
+    if len(partie['joueurs_prets_jeu']) >= partie['nb_attendus']:
+        _distribuer_roles(partie)
+        sauver_partie(code, partie)
+        print(f">>> distribution : {[(j['pseudo'], j['role']) for j in partie['joueurs'].values()]}")
+        # Envoie le rôle à chaque joueur individuellement
+        for sid, j in partie['joueurs'].items():
+            socketio.emit('ton_role', {
+                'role':      j['role'],
+                'video_url': j['video_url'],
+                'pseudo':    j['pseudo'],
+            }, to=sid)
+
 
 @socketio.on('joueur_pret')
 def on_joueur_pret(data):
