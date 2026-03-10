@@ -125,19 +125,12 @@ def api_partie(code):
     partie = get_partie(code)
     if not partie:
         return jsonify({'erreur': 'Partie introuvable'}), 404
-    sid    = request.args.get('sid')
-    joueur = partie['joueurs'].get(sid, {})
     return jsonify({
-        'phase':       partie['phase'],
-        'manche':      partie['manche'],
-        'nb_manches':  partie['nb_manches'],
-        'role':        joueur.get('role'),
-        'video_url':   joueur.get('video_url'),
-        'joueurs':     [j['pseudo'] for j in partie['joueurs'].values()],
-        'tour_actuel': partie['tour_actuel'],
-        'ordre_tours': [partie['joueurs'].get(s, {}).get('pseudo') for s in partie['ordre_tours']],
+        'phase':      partie['phase'],
+        'manche':     partie['manche'],
+        'nb_manches': partie['nb_manches'],
+        'joueurs':    [j['pseudo'] for j in partie['joueurs'].values()],
     })
-
 # -------------------------------------------------------
 # SOCKETIO — LOBBY
 # -------------------------------------------------------
@@ -219,6 +212,7 @@ def _distribuer_roles(partie):
 
         partie['joueurs'][sid]['role']      = role
         partie['joueurs'][sid]['video_url'] = video_url
+        print(f">>> distribution : {[(j['pseudo'], j['role']) for j in partie['joueurs'].values()]}")
 
 
 # -------------------------------------------------------
