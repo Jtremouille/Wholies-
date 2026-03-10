@@ -149,21 +149,39 @@
   // AFFICHAGE DE L'INDICE
   // -------------------------------------------------------
 function afficherContenu() {
+
     afficherEcran('ecran-indice');
 
+    // RESET AFFICHAGE
+    document.getElementById('zone-video').classList.add('hidden');
+    document.getElementById('zone-image').classList.add('hidden');
+    document.getElementById('zone-mrwhite').classList.add('hidden');
+
     if (monRole === 'mr_white') {
+
         document.getElementById('zone-mrwhite').classList.remove('hidden');
         lancerCompteur(30);
-    } else if (maVideoUrl && maVideoUrl.includes('/video/')) {
+
+    }
+    else if (maVideoUrl && maVideoUrl.includes('/video/')) {
+
         document.getElementById('zone-video').classList.remove('hidden');
+
         const video = document.getElementById('ma-video');
+
         document.getElementById('src-video').src = maVideoUrl;
+
         video.load();
         video.play();
+
         video.onended = () => debloquerBtnPret();
-    } else if (maVideoUrl) {
+    }
+    else if (maVideoUrl) {
+
         document.getElementById('zone-image').classList.remove('hidden');
+
         document.getElementById('mon-image').src = maVideoUrl;
+
         debloquerBtnPret();
     }
 }

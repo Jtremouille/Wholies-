@@ -37,16 +37,18 @@ def supprimer_partie(code):
 # THEMES
 # ------------------------------
 
-THEMES = {
-    "Nuit": {
-        "civil": "https://res.cloudinary.com/dzgy637iz/video/upload/v1772999688/1_Braquage_nuit_k34icx.mp4",
-        "imposteur": "https://res.cloudinary.com/dzgy637iz/video/upload/v1772999689/2_Braquage_nuit_pr1nq7.mp4",
+SCENES = [
+    {
+        "nom": "Braquage",
+        "civil": "https://res.cloudinary.com/.../Braquage/1.mp4",
+        "imposteur": "https://res.cloudinary.com/.../Braquage/2.mp4"
     },
-    "Image": {
-        "civil": "https://res.cloudinary.com/dzgy637iz/image/upload/v1772999727/1_image_ix6jmq.png",
-        "imposteur": "https://res.cloudinary.com/dzgy637iz/image/upload/v1772999729/2_image_wzsczs.png",
+    {
+        "nom": "Restaurant",
+        "civil": "https://res.cloudinary.com/.../Restaurant/1.png",
+        "imposteur": "https://res.cloudinary.com/.../Restaurant/2.png"
     },
-}
+]
 
 
 # ------------------------------
@@ -178,53 +180,32 @@ def distribuer_roles(code):
 
     partie = get_partie(code)
 
-    if not partie:
-        return
-
     sids = list(partie['joueurs'].keys())
-
-    if len(sids) < 3:
-        return
 
     random.shuffle(sids)
 
-    partie['votes'] = {}
-    partie['phase'] = 'visionnage'
+    # choisir une scène
+    scene = random.choice(SCENES)
+    print("SCENE CHOISIE:", scene["nom"])
 
-    for sid in sids:
-        partie['joueurs'][sid]['pret'] = False
+    civil_url = scene["civil"]
+    imposteur_url = scene["imposteur"]
 
-    nom_theme = random.choice(list(THEMES.keys()))
-    theme = THEMES[nom_theme]
-
-    partie['theme_actuel'] = nom_theme
+    partie['theme_actuel'] = scene["nom"]
 
     imposteur_sid = random.choice(sids)
-
-    mr_white_sid = None
-
-    if partie['avec_mr_white'] and len(sids) >= 4:
-
-        restants = [s for s in sids if s != imposteur_sid]
-
-        mr_white_sid = random.choice(restants)
 
     for sid in sids:
 
         if sid == imposteur_sid:
 
-            role = 'imposteur'
-            url = theme['imposteur']
-
-        elif sid == mr_white_sid:
-
-            role = 'mr_white'
-            url = ""
+            role = "imposteur"
+            url = imposteur_url
 
         else:
 
-            role = 'civil'
-            url = theme['civil']
+            role = "civil"
+            url = civil_url
 
         partie['joueurs'][sid]['role'] = role
         partie['joueurs'][sid]['video_url'] = url
@@ -245,11 +226,13 @@ def distribuer_roles(code):
 # ------------------------------
 
 @socketio.on('rejoindre_lobby')
-
 def on_rejoindre_lobby(data):
 
     code = data.get('code', '').upper()
-    pseudo = data.get('pseudo', 'Joueur')
+    pseudo = data.get('pseudo')
+
+    if not pseudo:
+        return
 
     partie = get_partie(code)
 
@@ -258,6 +241,17 @@ def on_rejoindre_lobby(data):
 
     join_room(code)
 
+    # supprimer les anciens joueurs avec le même pseudo
+    anciens = []
+
+    for sid, j in partie['joueurs'].items():
+        if j['pseudo'] == pseudo:
+            anciens.append(sid)
+
+    for sid in anciens:
+        del partie['joueurs'][sid]
+
+    # ajouter le joueur
     partie['joueurs'][request.sid] = {
         'pseudo': pseudo,
         'role': None,
@@ -272,7 +266,6 @@ def on_rejoindre_lobby(data):
         'joueurs': [j['pseudo'] for j in partie['joueurs'].values()],
         'nb': len(partie['joueurs']),
     }, to=code)
-
 
 @socketio.on('lancer_partie')
 
@@ -468,15 +461,19 @@ if __name__ == '__main__':
         allow_unsafe_werkzeug=True
     )
 
+@socketio.on('disconnect')
+def on_disconnect():
 
-# =============================
-# jeu.html (modif vidéo mobile)
-# =============================
+    for key in redis_client.scan_iter("partie:*"):
 
-# Dans ton fichier HTML, remplace simplement la ligne :
+        partie = json.loads(redis_client.get(key))
 
-# <video id="ma-video" controls autoplay playsinline>
+        if request.sid in partie['joueurs']:
 
-# par :
+            code = partie['code']
 
-# <video id="ma-video" controls autoplay muted playsinline>
+            del partie['joueurs'][request.sid]
+
+            sauver_partie(code, partie)
+
+            break
