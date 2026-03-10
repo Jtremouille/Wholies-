@@ -90,8 +90,8 @@ def creer_partie():
         'joueurs': {},
         'votes': {},
         'theme_actuel': None,
-        "scenes_restantes": SCENES.copy(),
-        "host_sid": request.sid
+        'scenes_restantes': SCENES.copy(),
+        'host_sid': None
     }
 
     sauver_partie(code, partie)
@@ -266,6 +266,10 @@ def on_rejoindre_lobby(data):
 
     join_room(code)
 
+    # définir l'hôte si ce n'est pas encore fait
+    if partie.get("host_sid") is None:
+        partie["host_sid"] = request.sid
+
     # supprimer les anciens joueurs avec le même pseudo
     anciens = []
 
@@ -282,6 +286,7 @@ def on_rejoindre_lobby(data):
         'role': None,
         'video_url': None,
         'pret': False,
+        'vote': None,
         'sid': request.sid,
     }
 
