@@ -252,21 +252,17 @@ def on_rejoindre_jeu(data):
     nb_attendus = partie.get('nb_attendus', 0)
     print(f">>> joueurs sur /jeu : {partie['joueurs_prets_jeu']} / attendus : {nb_attendus}")
 
-    if nb_attendus > 0 and len(partie['joueurs_prets_jeu']) >= nb_attendus:
-
     # Quand tout le monde est arrivé → distribuer les rôles
-    if len(partie['joueurs_prets_jeu']) >= partie.get('nb_attendus', 999):
+    if nb_attendus > 0 and len(partie['joueurs_prets_jeu']) >= nb_attendus:
         _distribuer_roles(partie)
         sauver_partie(code, partie)
-        print(f">>> distribution : {[(j['pseudo'], j['role']) for j in partie['joueurs'].values()]}")
-        # Envoie le rôle à chaque joueur individuellement
+        print(f">>> distribution finale : {[(j['pseudo'], j['role']) for j in partie['joueurs'].values()]}")
         for sid, j in partie['joueurs'].items():
             socketio.emit('ton_role', {
                 'role':      j['role'],
                 'video_url': j['video_url'],
                 'pseudo':    j['pseudo'],
             }, to=sid)
-
 
 @socketio.on('joueur_pret')
 def on_joueur_pret(data):
