@@ -11,7 +11,6 @@
 
   <!-- ÉCRAN : INDICE (vidéo ou compteur mr white) -->
   <div id="ecran-indice" class="ecran">
-    <div id="badge-role"></div>
 
     <!-- Vidéo civil / imposteur -->
     <div id="zone-video" class="hidden">
@@ -149,35 +148,6 @@
   // -------------------------------------------------------
   // AFFICHAGE DE L'INDICE
   // -------------------------------------------------------
-  function afficherIndice() {
-    afficherEcran('ecran-indice');
-
-    const badge = document.getElementById('badge-role');
-    if (monRole === 'civil') {
-      badge.innerHTML = '<div class="badge badge-civil">🟦 Tu es CIVIL</div>';
-    } else if (monRole === 'imposteur') {
-      badge.innerHTML = '<div class="badge badge-imposteur">🟥 Tu es l\'IMPOSTEUR</div>';
-    } else {
-      badge.innerHTML = '<div class="badge badge-mrwhite">👤 Tu es MISTER WHITE</div>';
-    }
-
-    if (monRole === 'mr_white') {
-      document.getElementById('zone-mrwhite').classList.remove('hidden');
-      lancerCompteur(30);
-    } else if (maVideoUrl && (maVideoUrl.endsWith('.mp4') || maVideoUrl.includes('video'))) {
-      document.getElementById('zone-video').classList.remove('hidden');
-      const video = document.getElementById('ma-video');
-      document.getElementById('src-video').src = maVideoUrl;
-      video.load();
-      video.play();
-      video.onended = () => debloquerBtnPret();
-    } else {
-      // Image
-      document.getElementById('zone-image').classList.remove('hidden');
-      document.getElementById('mon-image').src = maVideoUrl;
-      debloquerBtnPret();
-    }
-  }
 
   function lancerCompteur(secondes) {
     let s = secondes;
@@ -202,7 +172,7 @@
   function declarer_pret() {
     document.getElementById('btn-pret').disabled = true;
     document.getElementById('btn-pret').textContent = '⏳ En attente des autres...';
-    socket.emit('joueur_pret', { code: CODE });
+    socket.emit('joueur_pret', { code: CODE, pseudo: PSEUDO });
   }
 
   // -------------------------------------------------------

@@ -264,22 +264,24 @@ def on_rejoindre_jeu(data):
 @socketio.on('joueur_pret')
 def on_joueur_pret(data):
     code   = data.get('code', '').upper()
+    pseudo = data.get('pseudo', '')
     partie = get_partie(code)
     if not partie:
         return
 
-    if request.sid in partie['joueurs']:
-        partie['joueurs'][request.sid]['pret'] = True
-        sauver_partie(code, partie)
+    # Cherche par pseudo
+    for sid, j in partie['joueurs'].items():
+        if j['pseudo'] == pseudo:
+            partie['joueurs'][sid]['pret'] = True
+            break
+    sauver_partie(code, partie)
 
     nb_prets = sum(1 for j in partie['joueurs'].values() if j.get('pret'))
     total    = len(partie['joueurs'])
     print(f">>> joueur_pret : {nb_prets}/{total} prêts")
 
-    # Informe tout le monde du nombre de joueurs prêts
     socketio.emit('nb_prets', {'nb': nb_prets, 'total': total}, to=code)
 
-    # Quand tout le monde est prêt → passage au vote
     if nb_prets >= total:
         partie['phase'] = 'vote'
         sauver_partie(code, partie)
