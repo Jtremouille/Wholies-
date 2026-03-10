@@ -152,35 +152,60 @@ function afficherContenu() {
 
     afficherEcran('ecran-indice');
 
-    // RESET AFFICHAGE
-    document.getElementById('zone-video').classList.add('hidden');
-    document.getElementById('zone-image').classList.add('hidden');
-    document.getElementById('zone-mrwhite').classList.add('hidden');
+    const zoneVideo = document.getElementById('zone-video');
+    const zoneImage = document.getElementById('zone-image');
+    const zoneMrWhite = document.getElementById('zone-mrwhite');
 
+    const video = document.getElementById('ma-video');
+    const videoSrc = document.getElementById('src-video');
+    const image = document.getElementById('mon-image');
+
+    // RESET COMPLET
+    zoneVideo.classList.add('hidden');
+    zoneImage.classList.add('hidden');
+    zoneMrWhite.classList.add('hidden');
+
+    video.pause();
+    video.removeAttribute("src");
+    videoSrc.src = "";
+    video.load();
+
+    image.src = "";
+
+    // CAS MR WHITE
     if (monRole === 'mr_white') {
 
-        document.getElementById('zone-mrwhite').classList.remove('hidden');
+        zoneMrWhite.classList.remove('hidden');
+
         lancerCompteur(30);
 
+        return;
     }
-    else if (maVideoUrl && maVideoUrl.includes('/video/')) {
 
-        document.getElementById('zone-video').classList.remove('hidden');
+    // VIDEO
+    if (maVideoUrl && maVideoUrl.includes('/video/')) {
 
-        const video = document.getElementById('ma-video');
+        zoneVideo.classList.remove('hidden');
 
-        document.getElementById('src-video').src = maVideoUrl;
+        videoSrc.src = maVideoUrl;
 
         video.load();
-        video.play();
 
-        video.onended = () => debloquerBtnPret();
+        video.play().catch(()=>{});
+
+        video.onended = () => {
+            debloquerBtnPret();
+        };
+
+        return;
     }
-    else if (maVideoUrl) {
 
-        document.getElementById('zone-image').classList.remove('hidden');
+    // IMAGE
+    if (maVideoUrl) {
 
-        document.getElementById('mon-image').src = maVideoUrl;
+        zoneImage.classList.remove('hidden');
+
+        image.src = maVideoUrl;
 
         debloquerBtnPret();
     }

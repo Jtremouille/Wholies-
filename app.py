@@ -254,9 +254,9 @@ def distribuer_roles(code):
 def on_rejoindre_lobby(data):
 
     code = data.get('code', '').upper()
-    pseudo = data.get('pseudo')
+    pseudo = (data.get('pseudo') or "").strip()
 
-    if not pseudo:
+    if pseudo == "":
         return
 
     partie = get_partie(code)
@@ -457,23 +457,22 @@ def calculer_resultat(code):
 def manche_suivante(data):
 
     code = data.get("code", "").upper()
+    pseudo = data.get("pseudo")
 
     partie = get_partie(code)
 
     if not partie:
         return
 
-    # seul l'host peut lancer la manche
-    if request.sid != partie.get("host_sid"):
+    # seul l'hôte peut lancer
+    if pseudo != partie["hote"]:
         return
 
-    # vérifier fin de partie
     if partie["manche"] >= partie["nb_manches"]:
 
         socketio.emit("fin_partie", {}, to=code)
         return
 
-    # passer à la manche suivante
     partie["manche"] += 1
 
     sauver_partie(code, partie)
@@ -493,19 +492,24 @@ if __name__ == '__main__':
         allow_unsafe_werkzeug=True
     )
 
-@socketio.on('disconnect')
+@socketio.on("disconnect")
 def on_disconnect():
 
     for key in redis_client.scan_iter("partie:*"):
 
         partie = json.loads(redis_client.get(key))
 
-        if request.sid in partie['joueurs']:
+        if request.sid in partie["joueurs"]:
 
-            code = partie['code']
+            code = partie["code"]
 
-            del partie['joueurs'][request.sid]
+            del partie["joueurs"][request.sid]
 
             sauver_partie(code, partie)
+
+            socketio.emit("mise_a_jour_lobby", {
+                "joueurs":[j["pseudo"] for j in partie["joueurs"].values()],
+                "nb":len(partie["joueurs"])
+            }, to=code)
 
             break
