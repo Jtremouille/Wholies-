@@ -249,10 +249,13 @@ def on_rejoindre_jeu(data):
         partie.setdefault('joueurs_prets_jeu', []).append(pseudo)
 
     sauver_partie(code, partie)
-    print(f">>> joueurs sur /jeu : {partie['joueurs_prets_jeu']} / attendus : {partie['nb_attendus']}")
+    nb_attendus = partie.get('nb_attendus', 0)
+    print(f">>> joueurs sur /jeu : {partie['joueurs_prets_jeu']} / attendus : {nb_attendus}")
+
+    if nb_attendus > 0 and len(partie['joueurs_prets_jeu']) >= nb_attendus:
 
     # Quand tout le monde est arrivé → distribuer les rôles
-    if len(partie['joueurs_prets_jeu']) >= partie['nb_attendus']:
+    if len(partie['joueurs_prets_jeu']) >= partie.get('nb_attendus', 999):
         _distribuer_roles(partie)
         sauver_partie(code, partie)
         print(f">>> distribution : {[(j['pseudo'], j['role']) for j in partie['joueurs'].values()]}")
