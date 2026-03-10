@@ -39,14 +39,14 @@ def supprimer_partie(code):
 
 SCENES = [
     {
-        "nom": "Braquage",
-        "civil": "https://res.cloudinary.com/.../Braquage/1.mp4",
-        "imposteur": "https://res.cloudinary.com/.../Braquage/2.mp4"
+        "nom": "Nuit",
+        "civil": "https://res.cloudinary.com/.../Nuit/1.mp4",
+        "imposteur": "https://res.cloudinary.com/.../Nuit/2.mp4"
     },
     {
-        "nom": "Restaurant",
-        "civil": "https://res.cloudinary.com/.../Restaurant/1.png",
-        "imposteur": "https://res.cloudinary.com/.../Restaurant/2.png"
+        "nom": "Image",
+        "civil": "https://res.cloudinary.com/.../Image/1.png",
+        "imposteur": "https://res.cloudinary.com/.../Image/2.png"
     },
 ]
 
