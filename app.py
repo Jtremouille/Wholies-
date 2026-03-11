@@ -33,16 +33,17 @@ def supprimer_partie(code):
 SCENES = [
     {
         "nom": "Nuit",
-        "civil": "https://res.cloudinary.com/dzgy637iz/video/upload/v1772999688/1_Braquage_nuit_k34icx.mp4",
-        "imposteur": "https://res.cloudinary.com/dzgy637iz/video/upload/v1772999689/2_Braquage_nuit_pr1nq7.mp4"
+        "a": "https://res.cloudinary.com/dzgy637iz/video/upload/v1772999688/1_Braquage_nuit_k34icx.mp4",
+        "b": "https://res.cloudinary.com/dzgy637iz/video/upload/v1772999689/2_Braquage_nuit_pr1nq7.mp4"
     },
     {
         "nom": "Image",
-        "civil": "https://res.cloudinary.com/dzgy637iz/image/upload/v1772999727/1_image_ix6jmq.png",
-        "imposteur": "https://res.cloudinary.com/dzgy637iz/image/upload/v1772999729/2_image_wzsczs.png"
+        "a": "https://res.cloudinary.com/dzgy637iz/image/upload/v1772999727/1_image_ix6jmq.png",
+        "b": "https://res.cloudinary.com/dzgy637iz/image/upload/v1772999729/2_image_wzsczs.png"
     },
 ]
 
+]
 # ------------------------------
 # UTIL
 # ------------------------------
@@ -144,6 +145,7 @@ def api_partie(code):
 # ------------------------------
 
 def distribuer_roles(code):
+
     partie = get_partie(code)
     if not partie:
         return
@@ -152,48 +154,71 @@ def distribuer_roles(code):
     if len(sids) < 2:
         return
 
-    # Reset
+    # RESET JOUEURS
     for j in partie['joueurs'].values():
-        j['pret']      = False
-        j['vote']      = None
-        j['role']      = None
+        j['pret'] = False
+        j['vote'] = None
+        j['role'] = None
         j['video_url'] = None
 
     partie['votes'] = {}
     partie['phase'] = 'visionnage'
 
-    # Choisir une scène sans répétition
+    # SCENES SANS REPETITION
     if not partie.get('scenes_restantes'):
         partie['scenes_restantes'] = SCENES.copy()
 
     scene = random.choice(partie['scenes_restantes'])
-    partie['scenes_restantes'] = [s for s in partie['scenes_restantes'] if s['nom'] != scene['nom']]
+
+    # supprimer la scène utilisée
+    partie['scenes_restantes'] = [
+        s for s in partie['scenes_restantes']
+        if s['nom'] != scene['nom']
+    ]
+
     partie['theme_actuel'] = scene['nom']
 
     print(f">>> SCENE CHOISIE: {scene['nom']}")
 
-    # Choisir l'imposteur
+    # inversion aléatoire A/B
+    if random.random() < 0.5:
+        civil_url = scene["a"]
+        imposteur_url = scene["b"]
+    else:
+        civil_url = scene["b"]
+        imposteur_url = scene["a"]
+
+    # choisir imposteur
     imposteur_sid = random.choice(sids)
+
     print(f">>> IMPOSTEUR: {partie['joueurs'][imposteur_sid]['pseudo']}")
 
+    # distribution
     for sid in sids:
+
         if sid == imposteur_sid:
-            partie['joueurs'][sid]['role']      = 'imposteur'
-            partie['joueurs'][sid]['video_url'] = scene['imposteur']
+
+            partie['joueurs'][sid]['role'] = 'imposteur'
+            partie['joueurs'][sid]['video_url'] = imposteur_url
+
         else:
-            partie['joueurs'][sid]['role']      = 'civil'
-            partie['joueurs'][sid]['video_url'] = scene['civil']
+
+            partie['joueurs'][sid]['role'] = 'civil'
+            partie['joueurs'][sid]['video_url'] = civil_url
 
     sauver_partie(code, partie)
 
-    print(f">>> DISTRIBUTION: {[(j['pseudo'], j['role']) for j in partie['joueurs'].values()]}")
+    print(">>> DISTRIBUTION:",
+        [(j['pseudo'], j['role']) for j in partie['joueurs'].values()]
+    )
 
-    # Envoyer les rôles
+    # envoyer les roles
     for sid, j in partie['joueurs'].items():
+
         socketio.emit('ton_role', {
-            'role':      j['role'],
+            'role': j['role'],
             'video_url': j['video_url'],
-            'pseudo':    j['pseudo'],
+            'pseudo': j['pseudo'],
         }, to=sid)
 
 # ------------------------------
