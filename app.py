@@ -42,8 +42,6 @@ SCENES = [
         "b": "https://res.cloudinary.com/dzgy637iz/image/upload/v1772999729/2_image_wzsczs.png"
     },
 ]
-
-]
 # ------------------------------
 # UTIL
 # ------------------------------
