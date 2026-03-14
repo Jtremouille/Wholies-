@@ -33,15 +33,46 @@ def supprimer_partie(code):
 SCENES = [
     {
         "nom": "Nuit",
-        "a": "https://res.cloudinary.com/dzgy637iz/video/upload/v1772999688/1_Braquage_nuit_k34icx.mp4",
-        "b": "https://res.cloudinary.com/dzgy637iz/video/upload/v1772999689/2_Braquage_nuit_pr1nq7.mp4"
+        "a": "https://res.cloudinary.com/dzgy637iz/video/upload/v1773318545/1_night_dpgnst.mp4",
+        "b": "https://res.cloudinary.com/dzgy637iz/video/upload/v1773318552/2_night_orvksq.mp4"
     },
     {
-        "nom": "Image",
-        "a": "https://res.cloudinary.com/dzgy637iz/image/upload/v1772999727/1_image_ix6jmq.png",
-        "b": "https://res.cloudinary.com/dzgy637iz/image/upload/v1772999729/2_image_wzsczs.png"
+        "nom": "Réunion",
+        "a": "https://res.cloudinary.com/dzgy637iz/image/upload/v1773223923/579cead4-3c05-4916-a73e-f169ef2f4b2d_w6ezb2.jpg",
+        "b": "https://res.cloudinary.com/dzgy637iz/image/upload/v1773223924/2bfb5ae1-74aa-4503-b8ff-c890fe6ca4a0_wjpgkt.jpg"
+    },
+    {
+        "nom": "Blackboard",
+        "a": "https://res.cloudinary.com/dzgy637iz/image/upload/v1773318920/1_blackboard_lletvh.jpg",
+        "b": "https://res.cloudinary.com/dzgy637iz/image/upload/v1773318917/2_blackboard_oj8jwx.jpg"
+    },
+    {
+        "nom": "Apple",
+        "a": "https://res.cloudinary.com/dzgy637iz/image/upload/v1773226930/apple1_tt68pd.jpg",
+        "b": "https://res.cloudinary.com/dzgy637iz/image/upload/v1773226928/apple2_omlszq.jpg"
+    },
+    {
+        "nom": "Chimie",
+        "a": "https://res.cloudinary.com/dzgy637iz/image/upload/v1773319337/1_chimie_cb3xcf.jpg",
+        "b": "https://res.cloudinary.com/dzgy637iz/image/upload/v1773319332/2_chimie_uu6dpa.jpg"
+    },
+    {
+        "nom": "Babies",
+        "a": "https://res.cloudinary.com/dzgy637iz/image/upload/v1773502582/1_reunion_kpua1m.png",
+        "b": "https://res.cloudinary.com/dzgy637iz/image/upload/v1773502571/2_reunion_mmp0gn.png"
+    },
+    {
+        "nom": "Painting",
+        "a": "https://res.cloudinary.com/dzgy637iz/image/upload/v1773502688/1_tableau_vxvant.png",
+        "b": "https://res.cloudinary.com/dzgy637iz/image/upload/v1773502687/2_tableau_jhqu2e.png"
+    },
+    {
+        "nom": "Musk",
+        "a": "https://res.cloudinary.com/dzgy637iz/image/upload/v1773502796/ChatGPT_Image_14_mars_2026_16_31_53_o0zfhe.png",
+        "b": "https://res.cloudinary.com/dzgy637iz/image/upload/v1773502795/Gemini_Generated_Image_62yr9n62yr9n62yr_jbj2pj.png"
     },
 ]
+
 # ------------------------------
 # UTIL
 # ------------------------------
